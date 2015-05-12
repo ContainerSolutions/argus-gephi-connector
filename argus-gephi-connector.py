@@ -1,10 +1,4 @@
-# run as
-# install Argus server
-# sudo /usr/local/sbin/argus  -P 561 -d -i eth0 -Z
-# start Gephi with streaming turned on
-# and then
-# ra -S 127.0.0.1:561 -n -c $'\t' -M uni | python argus-gephi-connector.py
-
+#!/usr/bin/env python
 import time
 from threading import Thread, Condition, RLock, Timer
 import pygephi
@@ -25,11 +19,14 @@ def synchronized(method):
             return method(self, *arg, **kws)
     return new_method
 
+
 class MyGephiClient(pygephi.GephiClient):
-	# needed because pygephi.GephiClient misses "change edge" command
+    # needed because pygephi.GephiClient misses "change edge" command
+
     def change_edge(self, id, flush=True, **attributes):
-        self.data += json.dumps(self.peh({"ce":{id:attributes}})) + '\r\n'
-        if(self.autoflush): self.flush()
+        self.data += json.dumps(self.peh({"ce": {id: attributes}})) + '\r\n'
+        if(self.autoflush):
+            self.flush()
 
 
 class NetworkGraphModel:
@@ -287,7 +284,7 @@ while True:
             values['Dport'])
     else:
         attrs = {'proto': values['Proto']}
-	if values['Proto'] == 'udp':
+        if values['Proto'] == 'udp': # a hack to reduce number of edges, otherewise gephi had problems
             values['Sport'] = 'port'
             values['Dport'] = 'port'
         model.addEdge(
